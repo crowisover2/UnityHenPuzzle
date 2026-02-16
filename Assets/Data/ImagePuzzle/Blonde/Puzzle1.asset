@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 444eb5f606151d440a349ceeb0b66565, type: 3}
+  m_Name: Puzzle1
+  m_EditorClassIdentifier: 
+  Icon: {fileID: 74872954, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  Price: 100
+  IsUnlock: 0
+  Preview: {fileID: -1295597599, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  Pieces:
+  - {fileID: 1180113961, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: -1117522725, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: -857107524, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: 1172709134, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: 262856504, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: -1691262217, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: -1727069182, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: -1203660005, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: 152312835, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: -1880199963, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: -613196371, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: -51994111, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: 692135601, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: -1344051512, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: -283862702, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  - {fileID: -1972510115, guid: 783d2402629fff5439f30a9ae38f074d, type: 3}
+  gallery:
+    SceneName: blonde
+    SceneId: 1

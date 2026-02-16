@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b79e8d5d8b6b004c8dccd557aff0153, type: 3}
+  m_Name: Girl1
+  m_EditorClassIdentifier: 
+  thumbnail: {fileID: 703271370, guid: 8b75d141747df2746af7a5a30bef7aab, type: 3}
+  list:
+  - {fileID: 11400000, guid: 9aeb5826a2d758c4e861c6ed2e7ccc43, type: 2}
