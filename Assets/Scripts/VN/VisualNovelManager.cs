@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using Spine.Unity;
 public class VisualNovelManager : MonoBehaviour
 {
+        /*
     [Serializable]
     public class GalleryScene
     {
@@ -187,5 +188,5 @@ public class VisualNovelManager : MonoBehaviour
             }
         }
     }
-    #endregion
+    #endregion*/
 }

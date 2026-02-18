@@ -6,6 +6,7 @@ using TMPro;
 
 public class TextVnDialogueController : MonoBehaviour
 {
+        /*
     [SerializeField] private GameObject dialogueUIObj;
     [SerializeField] private GameObject introBlackObj;
     [SerializeField] private TextMeshProUGUI actorNameTxt;
@@ -93,5 +94,5 @@ public class TextVnDialogueController : MonoBehaviour
             yield return new WaitForSeconds(0.05f);
         }
         isRevealingText = false;
-    }
+    }*/
 }

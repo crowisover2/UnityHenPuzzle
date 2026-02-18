@@ -9,6 +9,7 @@ using Random = UnityEngine.Random;
 
 public class Game : MonoBehaviour
 {
+        /*
     //Array Coor
     //Constants.MaxRows, Constants.MaxColumns
 
@@ -497,5 +498,5 @@ public class Game : MonoBehaviour
     //            break;
     //    }
     //}
-    #endregion
+    #endregion     */
 }

@@ -1,37 +1,70 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
+using System.IO;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
-[CreateAssetMenu(fileName = "PuzzleDataList", menuName = "Puzzle/DataList")]
+[CreateAssetMenu(fileName = "PuzzleDataList", menuName = "Puzzle/PuzzleDataList")]
 public class PuzzleDataList : ScriptableObject
 {
-    [SerializeField] private Sprite thumbnail;
-    [SerializeField] private List<ImagePuzzleData> list;
+    public List<PuzzleData> List = new List<PuzzleData>();
+    public string Path = "Assets/Textures/Puzzles"; // Example path
+    public bool IsUsingChildren = true;
 
-    public int Count
+#if UNITY_EDITOR
+    public void CollectAndProcess()
     {
-        get { return list.Count; }
+        List.Clear();
+
+        // Find all PuzzleData assets in the path
+        string[] guids = AssetDatabase.FindAssets("t:PuzzleData", new[] { Path });
+
+        for (int i = 0; i < guids.Length; i++)
+        {
+            string assetPath = AssetDatabase.GUIDToAssetPath(guids[i]);
+
+            // Check if it's in a subfolder and if we should ignore it
+            if (!IsUsingChildren)
+            {
+                string directory = System.IO.Path.GetDirectoryName(assetPath).Replace("\\", "/");
+                if (directory != Path) continue;
+            }
+
+            PuzzleData data = AssetDatabase.LoadAssetAtPath<PuzzleData>(assetPath);
+            if (data != null)
+            {
+                // Update progress bar
+                float progress = (float)i / guids.Length;
+                EditorUtility.DisplayProgressBar("Processing Puzzle List", $"Slicing: {data.name}", progress);
+
+                // Automatically trigger the slice for each found asset
+                data.SliceImage();
+                List.Add(data);
+            }
+        }
+
+        EditorUtility.ClearProgressBar();
+        EditorUtility.SetDirty(this);
+        AssetDatabase.SaveAssets();
+        Debug.Log($"[PuzzleDataList] Successfully processed {List.Count} puzzles.");
     }
+#endif
+}
 
-    public Sprite GetThumbnail() { return thumbnail; }
-
-    public ImagePuzzleData GetPuzzle(int _indexPuzzle)
+#if UNITY_EDITOR
+[CustomEditor(typeof(PuzzleDataList))]
+public class PuzzleDataListEditor : Editor
+{
+    public override void OnInspectorGUI()
     {
-        return list[_indexPuzzle];
-    }
+        DrawDefaultInspector();
+        PuzzleDataList list = (PuzzleDataList)target;
 
-    public Sprite GetPreviewAt(int _index)
-    {
-        return list[_index].Preview;
-    }
-
-    public Sprite GetPiecesAt(int _indexImage, int _indexPieces)
-    {
-        return list[_indexImage].Pieces[_indexPieces];
-    }
-
-    public PlayerGallery GetGalleryAt(int _indexImage)
-    {
-        return list[_indexImage].gallery;
+        if (GUILayout.Button("Batch Collect & Slice Puzzles"))
+        {
+            list.CollectAndProcess();
+        }
     }
 }
+#endif

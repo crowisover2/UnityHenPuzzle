@@ -1546,28 +1546,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8aabeec626a24444180ab8789cddfc5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wholeImage: {fileID: -1595412069, guid: e21a1d319f9826947a651181a8c75b69, type: 3}
-  placeHolder:
-  - {fileID: 241433645}
-  - {fileID: 1624908658}
-  - {fileID: 1601129341}
-  - {fileID: 1754177889}
-  - {fileID: 376791878}
-  - {fileID: 1066633502}
-  - {fileID: 1293637697}
-  - {fileID: 1914652927}
-  - {fileID: 574839513}
-  - {fileID: 1170974903}
-  - {fileID: 869292072}
-  - {fileID: 342676190}
-  - {fileID: 1504621888}
-  - {fileID: 243429959}
-  - {fileID: 20707481}
-  - {fileID: 1352903742}
-  whenGameIsOver: {fileID: 0}
-  btnSkip: {fileID: 0}
-  adsPanel: {fileID: 0}
-  btnWatchAds: {fileID: 0}
 --- !u!4 &1574266218
 Transform:
   m_ObjectHideFlags: 0

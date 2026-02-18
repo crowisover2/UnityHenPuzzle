@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a393e54063159842a224f2330f1a31d, type: 3}
+  m_Name: SUCCUBUS
+  m_EditorClassIdentifier: 
+  GirlList:
+  - {fileID: 11400000, guid: de9398fb929dd5d4fa103ccebf5f5473, type: 2}
+  - {fileID: 11400000, guid: 445b62f9e5c28aa428e8878fefd6f9fd, type: 2}
+  - {fileID: 11400000, guid: c8a5848412163734ea73ab24c9cd877f, type: 2}
+  SourcePath: Assets\Sprites\SUCCUBUS
+  DestinationPath: Assets\Data

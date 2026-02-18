@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b79e8d5d8b6b004c8dccd557aff0153, type: 3}
+  m_Name: SUC C_List
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleDataList
+  List:
+  - {fileID: 11400000, guid: 073c5d3bf88d05f4c9176f9350c83a89, type: 2}
+  - {fileID: 11400000, guid: 5034e6d85dc84764ba96800b661ae9f5, type: 2}
+  - {fileID: 11400000, guid: 8e199cccba844b549a3f5b3e50ec1a1e, type: 2}
+  - {fileID: 11400000, guid: 59d5a539b309f17458bee548e3148461, type: 2}
+  - {fileID: 11400000, guid: 2c56aac1c3b4d2048b64c856996390de, type: 2}
+  Path: Assets/Data/SUCCUBUS/SUC C
+  IsUsingChildren: 1

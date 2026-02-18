@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Dialogue", menuName = "VisualNovelMode/TextDialogue")]
 public class VnDialogueData : ScriptableObject
 {
+        /*
     public List<TextDialogue> GalleryDialogueList;
 
     public TextDialogue GetGalleryDialogue(VisualNovelManager.GalleryStep _step)
@@ -28,5 +29,5 @@ public class TextDialogue
 public struct DialogueData
 {
     public string ActorName;
-    [TextArea(3, 10)] public string ActorDialogue;
+    [TextArea(3, 10)] public string ActorDialogue;*/
 }

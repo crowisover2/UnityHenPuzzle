@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class ChooseGirlController : MonoBehaviour
 {
+        /*
     [Space(5)]
     [SerializeField] private GameObject buttonPrefab;
     [SerializeField] private Transform containerButton;
@@ -60,6 +61,6 @@ public class ChooseGirlController : MonoBehaviour
     private void Update()
     {
        // coinTxt.text = CoinManager.Coins + "";
-    }
+    }*/
 }
 

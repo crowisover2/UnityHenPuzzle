@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class ButtonShop : MonoBehaviour
 {
+        /*
     [SerializeField] private Text textTag;
     [SerializeField] private GameObject panelTextTag;
     [SerializeField] private Button button;
@@ -47,5 +48,5 @@ public class ButtonShop : MonoBehaviour
     private void Update()
     {
         try { ChangeLock(!dataPuzzle.IsUnlock); } catch { }
-    }
+    }    */
 }
