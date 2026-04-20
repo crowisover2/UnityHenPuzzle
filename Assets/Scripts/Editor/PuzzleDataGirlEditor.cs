@@ -2,19 +2,22 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(PuzzleDataGirl))]
-public class PuzzleDataGirlEditor : Editor
+namespace PuzzleHen.Data
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(PuzzleDataGirl))]
+    public class PuzzleDataGirlEditor : Editor
     {
-        DrawDefaultInspector();
-
-        PuzzleDataGirl script = (PuzzleDataGirl)target;
-
-        GUILayout.Space(10);
-        if (GUILayout.Button("Generate All Puzzle Data", GUILayout.Height(40)))
+        public override void OnInspectorGUI()
         {
-            script.ProcessAllData();
+            DrawDefaultInspector();
+
+            PuzzleDataGirl script = (PuzzleDataGirl)target;
+
+            GUILayout.Space(10);
+            if (GUILayout.Button("Generate All Puzzle Data", GUILayout.Height(40)))
+            {
+                script.ProcessAllData();
+            }
         }
     }
 }

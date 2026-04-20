@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a393e54063159842a224f2330f1a31d, type: 3}
   m_Name: SUCCUBUS
   m_EditorClassIdentifier: 
+  ID: SUCCUBUS
+  Cover: {fileID: 21300000, guid: ac108bc69cc8fea4a8dcfb604130ac35, type: 3}
+  CoverGallery: {fileID: 21300000, guid: 4c67537a6d077cc4789e2c7c5c114405, type: 3}
   GirlList:
   - {fileID: 11400000, guid: de9398fb929dd5d4fa103ccebf5f5473, type: 2}
   - {fileID: 11400000, guid: 445b62f9e5c28aa428e8878fefd6f9fd, type: 2}

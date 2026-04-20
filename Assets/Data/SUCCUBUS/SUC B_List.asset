@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b79e8d5d8b6b004c8dccd557aff0153, type: 3}
   m_Name: SUC B_List
   m_EditorClassIdentifier: Assembly-CSharp::PuzzleDataList
+  ID: SUC B_List
   List:
   - {fileID: 11400000, guid: a7a4db7ba24aee14aa7de67457d15dd6, type: 2}
   - {fileID: 11400000, guid: cf2ac20299a2a56498039f362d2e019c, type: 2}

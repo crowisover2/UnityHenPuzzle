@@ -9,18 +9,13 @@ EditorBuildSettings:
     path: Assets/Scenes/Menu.unity
     guid: 0204b775312029c48aa068920d9184eb
   - enabled: 1
-    path: Assets/Scenes/TopUp.unity
-    guid: 7dde8c92c0441584ea38a85d6cbfa39e
-  - enabled: 1
     path: Assets/Scenes/ChooseGirl.unity
     guid: d40023bffe2980045b9cf5c2020e2989
-  - enabled: 1
-    path: Assets/Scenes/Shop.unity
-    guid: ca444b775e22fc446ad0a5f8f08d1bde
   - enabled: 1
     path: Assets/Scenes/Game.unity
     guid: 680cd8941be1eaf46a55604481c329fe
   - enabled: 1
-    path: Assets/Scenes/VN.unity
+    path: Assets/Scenes/Gallery.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0
