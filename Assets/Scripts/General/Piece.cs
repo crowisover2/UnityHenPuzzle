@@ -1,8 +1,10 @@
-﻿using System;
+﻿using JetBrains.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace PuzzleHen.Game
 {
@@ -10,181 +12,178 @@ namespace PuzzleHen.Game
     [Serializable]
     public class Board
     {
-        [SerializeField] private List<Vertical> row = new();
+        //[SerializeField] private List<Vertical> row = new();
+        [SerializeField] private List<Piece> pieces;
 
-        public Board(int _numSlices)
+        public int IdEmpty { set; get; }
+
+        private UnityAction winAction;
+
+        public Board(UnityAction _action)
         {
-            for (int row = 0; row < _numSlices; row++)
-            {
-                Vertical tempRow = new();
-                for (int column = 0; column < _numSlices; column++)
+            pieces = new List<Piece>();
+            winAction = _action;
+        }
+
+        public void InitPerPiece(int _id, RectTransform _rect)
+        {
+            foreach (var piece in pieces) {
+                if (piece.IdOri == _id)
                 {
-                    Piece tempPiece = new();
-                    tempRow.column.Add(tempPiece);
-                }
-                this.row.Add(tempRow);
-            }
-        }
-
-        public void SetGameObject(int _row, int _column, GameObject _object) => row[_row].column[_column].GameObject = _object;
-        public void SetPosition(int _row, int _column, Vector2 _pos)
-        {
-            row[_row].column[_column].GameObject.transform.position = _pos;
-        }
-
-        public Piece GetPiece(int _row, int _column)
-        {
-            return row[_row].column[_column];
-        }
-
-        public Piece GetPiece(GameObject _gameObject)
-        {
-            //for (int row = 0; row < Constants.MaxRows; row++)
-            for (int row = 0; row < 4; row++)
-            {
-                for (int column = 0; column < Constants.MaxColumns; column++)
-                {
-                    if (this.row[row].column[column].GameObject.Equals(_gameObject))
-                    {
-                        return this.row[row].column[column];
-                    }
+                    piece.Rect = _rect;
+                    piece.OriPos = _rect.position;
+                    return;
                 }
             }
 
-            return null;
+            Piece pi = new Piece()
+            {
+                IdOri = _id,
+                OriPos = _rect.position,
+                Rect = _rect
+            };
+
+            pieces.Add(pi);
         }
 
-        public void SetEmpty(int _row, int _column, bool _value = false)
+        public Piece GetPiece(int _idOri) => pieces.Find((x) => x.IdOri.Equals(_idOri));
+        public Piece GetPieceCurr(int _idCurr) => pieces.Find((x) => x.IdCurr.Equals(_idCurr));
+
+        public void SetCurrent(int _idOri, int _idCurr)
         {
-            row[_row].column[_column].GameObject.SetActive(_value);
+            pieces[_idOri].Rect.position = pieces[_idCurr].OriPos;
+            pieces[_idOri].IdCurr = _idCurr; 
         }
 
-        public bool IsEmpty(int _row, int _column)
+        public void Swap(int _idCurr, IEnumerable<int> _ids)
         {
-            return row[_row].column[_column].GameObject.activeSelf;
+            Piece actor = GetPieceCurr(_idCurr);
+            foreach (int id in _ids)
+            {
+                if (id.Equals(Constants.IdIgnore)) continue;
+
+                Piece target = GetPieceCurr(id);
+                if (target.IdOri.Equals(IdEmpty))
+                {
+                    int _idActor = actor.IdCurr;
+                    int _idTarget = target.IdCurr;
+                    SetCurrent(actor.IdOri, _idTarget);
+                    SetCurrent(target.IdOri, _idActor);
+                    break;
+                }
+            }
+
+            CheckBoard();
         }
 
-        public void SetOriginal(int _row, int _column) {
-            row[_row].column[_column].OriColumn = _column;
-            row[_row].column[_column].OriRow = _row;
-        }
-
-        public void SetCurrent(int _row, int _column, int _id)
+        private void CheckBoard()
         {
-            int row = (_id - 1) / Constants.MaxColumns;
-            int column = (_id - 1) % Constants.MaxColumns;
+            foreach (var piece in pieces) {
+                if (!piece.IdCurr.Equals(piece.IdOri)) return;
+            }
 
-            this.row[_row].column[_column].CurrColumn = column;
-            this.row[_row].column[_column].CurrRow = row;
-
-            //Debug.Log("ORI " + row[_row].column[_column].OriColumn
-            //+" ORI " + row[_row].column[_column].OriRow +
-            //"| Curr " + row[_row].column[_column].CurrColumn
-            //+" Curr " + row[_row].column[_column].CurrRow);
-        }
-
-        public Piece Swap(Piece _cur, Piece _nul)
-        {
-            int tempRow = _nul.CurrRow;
-            int tempCol = _nul.CurrColumn;
-
-            _nul.CurrRow = _cur.CurrRow;
-            _nul.CurrColumn = _cur.CurrColumn;
-
-            _cur.CurrRow = tempRow;
-            _cur.CurrColumn = tempCol;
-
-            return _cur;
-        }
-
-        public bool IsTheSame(int _row, int _column)
-        {
-            if (row[_row].column[_column].CurrRow == row[_row].column[_column].OriRow && row[_row].column[_column].CurrColumn == row[_row].column[_column].OriColumn) return true;
-            else return false;
+            winAction?.Invoke();
         }
     }
 
     [Serializable]
-    class Vertical { [SerializeField] public List<Piece> column = new(); }
-
-    [Serializable]
-    public class Piece
+    public class Piece : Column
     {
-        public int OriRow;
-        public int OriColumn;
-
-        public int CurrRow;
-        public int CurrColumn;
-
-        public GameObject GameObject;
+        public RectTransform Rect;
+        public Vector2 OriPos;
     }
+
 #endregion
 
     #region Matrix Component
     [Serializable]
     public class Matrix
     {
-        [SerializeField]
-        private List<Row> row = new();
+        [SerializeField] private int idEmpty;
+        [SerializeField] private List<Row> row = new();
         private int numSlices => PuzzleDataMiner.Current.NumSlices;
 
         public Matrix()
         {
             int value = -1;
+            idEmpty = -1;
+
             for (int row = 0; row < numSlices; row++)
             {
                 Row tempRow = new Row();
                 for (int column = 0; column < numSlices; column++)
                 {
-                    Coor tempCoor = new Coor();
-                    tempCoor.ID = value++;
-                    tempCoor.pos = Vector3.zero;
+                    value++;
+
+                    Column tempCoor = new Column();
+                    tempCoor.IdOri = value;
+                    tempCoor.IdCurr = value;
 
                     tempRow.column.Add(tempCoor);
                 }
                 this.row.Add(tempRow); // Add the constructed row to the matrix
             }
         }
-
+        public bool InitEmpty(int _row, int _column, int _emptyTileValue)
+        {
+            if(GetID(_row, _column) == _emptyTileValue)
+            {
+                idEmpty = _emptyTileValue;
+                return true;
+            }
+            return false;
+        }
         public int GetID(int _row, int _column)
         {
-            return row[_row].column[_column].ID;
+            return row[_row].column[_column].IdOri;
         }
-
-        public void SetID(int _row, int _column, int _value) => row[_row].column[_column].ID = _value;
-
-        public Vector2 GetVector(int _id)
+        public void GetID(int _row, int _column, out int _idOri, out int _idCurr)
         {
-            for (int column = 0; column < Constants.MaxColumns; column++)
+            _idOri = row[_row].column[_column].IdOri;
+            _idCurr = row[_row].column[_column].IdCurr;
+        }
+        public int GetEmptyPos(out int _row, out int _column)
+        {
+            for (int i = 0; i < row.Count; i++)
             {
-                for (int row = 0; row < Constants.MaxRows; row++)
+                for (int h = 0; h < row[i].column.Count; h++)
                 {
-                    if (this.row[row].column[column].ID.Equals(_id))
+                    if (row[i].column[h].IdCurr == idEmpty)
                     {
-                        return this.row[row].column[column].pos;
+                        _row = i;
+                        _column = h;
+                        return row[i].column[h].IdOri;
                     }
                 }
             }
 
-            return Vector2.zero;
+            _row = 99;
+            _column = 99;
+            return 99;
         }
+        public int IdEmpty => idEmpty;
+        public void SwapIdCurr(int _rowOri, int _columnOri, int _rowTarget, int _columnTarget)
+        {
+            var oriID = row[_rowOri].column[_columnOri].IdCurr;
+            var targetID = row[_rowTarget].column[_columnTarget].IdCurr;
 
-        public Vector2 GetVector(int _row, int _column) => row[_row].column[_column].pos;
-        public Vector2 SetVector(int _row, int _column, Vector2 _value) => row[_row].column[_column].pos = _value;
+            row[_rowOri].column[_columnOri].IdCurr = targetID;
+            row[_rowTarget].column[_columnTarget].IdCurr = oriID;
+        }
     }
 
     [Serializable]
     class Row
     {
         [SerializeField]
-        public List<Coor> column = new();
+        public List<Column> column = new();
     }
 
     [Serializable]
-    class Coor
+    public class Column
     {
-        public int ID;
-        public Vector2 pos;
+        public int IdCurr;
+        public int IdOri;
     }
     #endregion
 }

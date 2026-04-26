@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 namespace PuzzleHen.Game
@@ -12,29 +13,44 @@ namespace PuzzleHen.Game
     {
         [SerializeField] private Text txtID;
 
-        [Header("Board Game")]
-        [SerializeField] private RectTransform grid;
-        [SerializeField] private RectTransform placeHolder;
-
         [Header("End Game")]
         [SerializeField] private GameObject whenGameIsOver;
-        [SerializeField] private Button btnSkip;
+        [SerializeField] private Text txtWin;
+        [SerializeField] private Button btnNext;
 
         [Header("Other")]
         [SerializeField] private Button btnRetry;
         [SerializeField] private Button btnExit;
+        [SerializeField] private Button btnStart;
 
+
+        [Header("Board Game")]
+        [SerializeField] private RectTransform grid;
+        [SerializeField] private Sprite emptySprite;
+        [SerializeField] private Sprite barSprite;
+        [SerializeField] 
         private Board board;
+        //[SerializeField] 
+        private Matrix shuffledCoor;
 
         private List<RectTransform> holder;
+        private List<Button> btnPieces;
 
         private Rect preview;
         private Rect smallPrev;
 
-        private Matrix shuffledCoor;
+        private int maxSizes;
+
+        private int emptyTileX, emptyTileY;
+
+        private int emptyTileValue;
+
+        private int prevNum;
+
+        private bool isPlayerWin;
 
         private int numSlices => PuzzleDataMiner.Current.NumSlices;
-        private int maxSizes;
+
         private int MaxSizes
         {
             get { 
@@ -51,16 +67,38 @@ namespace PuzzleHen.Game
         // Use this for initialization
         private void Start()
         {
-            //txtID.text = PuzzleDataMiner.Current.ID;
+            isPlayerWin = false;
 
-            //btnRetry.onClick.AddListener(() => {
+            txtID.text = PuzzleDataMiner.Current.ID;
 
-            //});
-            //btnExit.onClick.AddListener(() => {
+            prevNum = Constants.IdIgnore;
 
-            //});
+            btnNext.onClick.AddListener(() =>
+            {
+                SceneManager.LoadScene(Constants.SceneGame);
+            });
 
-            board = new(numSlices);
+            btnRetry.onClick.AddListener(() =>
+            {
+                SceneManager.LoadScene(Constants.SceneGame);
+            });
+
+            btnExit.onClick.AddListener(() =>
+            {
+                SceneManager.LoadScene(Constants.SceneChooseGirl);
+            });
+
+            btnStart.onClick.AddListener(() => {
+                PlacedGameObjectBasedOnShuffledCoor();
+                btnStart.gameObject.SetActive(false);
+            });
+
+            board = new(() => {
+                txtWin.text = "Puzzle Clear \n" + txtID.text + " Scene is Unlocked";
+                PuzzleDataMiner.SetupCompleteNextChallenge();
+                isPlayerWin = true;
+                whenGameIsOver.SetActive(true);
+            });
 
             SetHolder();
             StartShuffling();
@@ -99,14 +137,20 @@ namespace PuzzleHen.Game
             }
         }
 
+        #region ShufflingID
         private void StartShuffling()
         {
-            //gameState = GameEnums.GameState.SHUFFLING;
-
             shuffledCoor = new();
 
+            emptyTileX = -1;
+            emptyTileY = -1;
+            
+            emptyTileValue = Random.Range(0, MaxSizes);
+            //emptyTileValue = 15;
+
+            SetEmptyTileMatrix();
+
             ShufflePuzzle();
-            EnsureSolvable();
         }
         private void ShufflePuzzle()
         {
@@ -117,445 +161,204 @@ namespace PuzzleHen.Game
         }
         private void PerformRandomMove()
         {
-            int emptyTileX = -1;
-            int emptyTileY = -1;
-
-            int emptyTileValue = maxSizes - 1;
-
-            //shuffle
+            GetEmptyTileMatrix();
+            RandomSwap();
+        }
+        private void GetEmptyTileMatrix()
+        {
+            emptyTileValue = shuffledCoor.GetEmptyPos(out emptyTileY, out emptyTileX);
+        }
+        private void SetEmptyTileMatrix()
+        {
             for (int row = 0; row < numSlices; row++)
             {
                 for (int column = 0; column < numSlices; column++)
                 {
-                    if (shuffledCoor.GetID(row, column) == emptyTileValue)
+                    var isTrue = shuffledCoor.InitEmpty(row, column, emptyTileValue);
+                    if (isTrue)
                     {
                         emptyTileX = column;
                         emptyTileY = row;
-                        break;
+                        return;
                     }
                 }
             }
+        }
+        private void RandomSwap()
+        {
+            int idCurr = emptyTileValue;
+            //Debug.Log("id " + idCurr);
 
-            int direction = Random.Range(0, 4);
+            int idUp, idDown, idLeft, idRight;
+
+            // Check up
+            idUp = idCurr - numSlices;
+            if (idUp < 0) idUp = Constants.IdIgnore;
+
+            // Check down
+            idDown = idCurr + numSlices;
+            if (idDown >= MaxSizes) idDown = Constants.IdIgnore;
+
+            // Check left
+            idLeft = idCurr - 1;
+            if (idLeft < 0 || idCurr % numSlices == 0) idLeft  = Constants.IdIgnore;
+
+            // Check right
+            idRight = idCurr + 1;
+            if (idRight % numSlices == 0 || idRight >= MaxSizes) idRight = Constants.IdIgnore;
+
+            int direction;
+
+            do
+            {
+                direction = Random.Range(0, 4);
+            }
+            while (direction == prevNum);
+
+            prevNum = direction;
 
             // Swap the empty tile with the adjacent tile in the chosen direction
             switch (direction)
             {
-                case 0:  // Up
-                    if (emptyTileX > 0)
-                        SwapTiles(emptyTileX, emptyTileY, emptyTileX - 1, emptyTileY);
+                case 0: // up
+                    if (idUp != Constants.IdIgnore)
+                    { SwapTiles(emptyTileY, emptyTileX, emptyTileY - 1, emptyTileX); }
                     break;
-                case 1:  // Down
-                    if (emptyTileX < 3)
-                        SwapTiles(emptyTileX, emptyTileY, emptyTileX + 1, emptyTileY);
+                case 1: // down
+                    if (idDown != Constants.IdIgnore)
+                    { SwapTiles(emptyTileY, emptyTileX, emptyTileY + 1, emptyTileX); }
                     break;
-                case 2:  // Left
-                    if (emptyTileY > 0)
-                        SwapTiles(emptyTileX, emptyTileY, emptyTileX, emptyTileY - 1);
+                case 2: // left
+                    if (idLeft != Constants.IdIgnore) { SwapTiles(emptyTileY, emptyTileX, emptyTileY, emptyTileX - 1); }
                     break;
-                case 3:  // Right
-                    if (emptyTileY < 3)
-                        SwapTiles(emptyTileX, emptyTileY, emptyTileX, emptyTileY + 1);
-                    break;
-            }
-        }
-        private void SwapTiles(int x1, int y1, int x2, int y2)
-        {
-            int temp = shuffledCoor.GetID(y1, x1);
-            shuffledCoor.SetID(y1, x1, shuffledCoor.GetID(y2, x2));
-            shuffledCoor.SetID(y2, x2, temp);
-        }
-        private void EnsureSolvable()
-        {
-            // Check if the initial state is solvable, if not, perform additional shuffle
-            if (!IsSolvable())
-            {
-                //Debug.Log("Damn");
-                ShufflePuzzle(); // Recursive call until a solvable state is achieved
-                EnsureSolvable();
-            }
-        }
-        private bool IsSolvable()
-        {
-            // Flatten the puzzle into a 1D array for easier inversion counting
-
-            int[] flatPuzzle = new int[MaxSizes];
-            int index = 0;
-            for (int row = 0; row < numSlices; row++)
-            {
-                for (int column = 0; column < numSlices; column++)
-                {
-                    flatPuzzle[index++] = shuffledCoor.GetID(row, column);
-                }
-            }
-
-            // Count the number of inversions
-            int inversions = 0;
-            int emptyTileValue = maxSizes - 1;
-
-            for (int i = 0; i < 15; i++)
-            {
-                for (int j = i + 1; j < 16; j++)
-                {
-                    if (flatPuzzle[i] > flatPuzzle[j] && flatPuzzle[i] != emptyTileValue && flatPuzzle[j] != emptyTileValue)
+                case 3: // right
+                    if (idRight != Constants.IdIgnore)
                     {
-                        inversions++;
+                        SwapTiles(emptyTileY, emptyTileX, emptyTileY, emptyTileX + 1);
                     }
-                }
+                    break;
             }
-
-            // Check if the number of inversions is even
-            return inversions % 2 == 0;
         }
+        private void SwapTiles(int _rowOri, int _columnOri, int _rowTarget, int _columnTarget)
+        {
+            shuffledCoor.SwapIdCurr(_rowOri, _columnOri, _rowTarget, _columnTarget);
+        }
+        #endregion
 
         private void StartSettingGameObject()
         {
             //gameState = GameEnums.GameState.START;
 
-            ScalePieces();
-            PreDeterminedPoints();
+            PlacingImagesToPieces();
+            //PreDeterminedPoints();
 
-            for (int row = 0; row < Constants.MaxRows; row++)
+            for (int row = 0; row < numSlices; row++)
             {
-                for (int column = 0; column < Constants.MaxColumns; column++)
+                for (int column = 0; column < numSlices; column++)
                 {
-                    int index = row * Constants.MaxRows + column;
-                    placeHolder[index].transform.position = GetScreenCoordinates(row, column);
+                    int index = row * numSlices + column;
+                    //placeHolder[index].transform.position = GetScreenCoordinates(row, column);
 
-                    board.SetGameObject(row, column, placeHolder[index]);
-                    board.SetOriginal(row, column);
+                    board.InitPerPiece(index, btnPieces[index].GetComponent<RectTransform>());
+                }
+            }
+        }
+        private void PlacingImagesToPieces()
+        {
+            GameObject temp = Instantiate(grid.gameObject, grid.parent);
 
-                    if (shuffledCoor.GetID(row, column).Equals(emptyTileValue))
+            var rects1 = temp.GetComponentsInChildren<RectTransform>()
+                .Where(r => r.parent == temp.transform)
+                .ToArray();
+
+            btnPieces = new List<Button>();
+
+            for (int index = 0; index < MaxSizes; index++)
+            {
+                rects1[index].gameObject.AddComponent<Image>();
+                Button btnTemp = rects1[index].gameObject.AddComponent<Button>();
+                btnTemp.image.sprite = PuzzleDataMiner.Current.Pieces[index];
+
+                btnPieces.Add(btnTemp);
+            }
+
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(temp.GetComponent<RectTransform>());
+
+            Destroy(temp.GetComponent<GridLayoutGroup>());
+
+        }
+        private void PlacedGameObjectBasedOnShuffledCoor()
+        {
+            emptyTileValue = shuffledCoor.IdEmpty;
+
+            for (int row = 0; row < numSlices; row++)
+            {
+                for (int column = 0; column < numSlices; column++)
+                {
+                    int IdOri, IdCurr;
+
+                    shuffledCoor.GetID(row, column, out IdOri, out IdCurr);
+
+                    if (IdCurr.Equals(emptyTileValue))
                     {
-                        board.SetEmpty(row, column);
+                        Image temp = holder[IdOri].AddComponent<Image>();
+                        temp.sprite = btnPieces[IdOri].image.sprite;
+
+                        GameObject newPiece = new GameObject("Bar", typeof(RectTransform));
+                        RectTransform tNewPiece = newPiece.GetComponent<RectTransform>();
+                        tNewPiece.SetParent(holder[IdOri].transform);
+                        tNewPiece.localScale = Vector3.one;
+                        tNewPiece.localPosition = Vector3.zero;
+
+                        tNewPiece.anchorMin = Vector2.zero;        // bottom-left (0,0)
+                        tNewPiece.anchorMax = Vector2.one;         // top-right (1,1)
+                        tNewPiece.pivot = new Vector2(0.5f, 0.5f); // center pivot
+                        tNewPiece.offsetMin = Vector2.zero;        // left, bottom offset = 0
+                        tNewPiece.offsetMax = Vector2.zero;        // right, top offset = 0
+
+                        Image temp2 = newPiece.AddComponent<Image>();
+                        temp2.sprite = barSprite;
+                        temp2.color = new Color(1, 1, 1, 0.5f);
+
+                        btnPieces[IdOri].enabled = false;
+                        btnPieces[IdOri].image.sprite = emptySprite;
+                        
+                        board.IdEmpty = IdOri;
                     }
+                    else
+                    {
+                        btnPieces[IdOri].onClick.AddListener(() => CheckPieceInput(IdOri));
+                    }
+
+                    board.SetCurrent(IdOri, IdCurr);
                 }
             }
         }
-
-        private void ScalePieces()
+        public void CheckPieceInput(int _idOri)
         {
-            wholeImage = PuzzleDataMiner.GetPreview();
+            int idCurr = board.GetPiece(_idOri).IdCurr;
+            int idUp, idDown, idLeft, idRight;
 
-            placeHolder[0].GetComponent<SpriteRenderer>().sprite = PuzzleDataMiner.GetPiecesAt(0);
-            Bounds bounds = placeHolder[0].GetComponent<SpriteRenderer>().sprite.bounds;
+            // Check up
+            idUp = idCurr - numSlices;
+            if (idUp < 0) idUp = Constants.IdIgnore;
 
-            if (wholeImage.texture.width > wholeImage.texture.height)
-            {
-                whichImageIsLonger = "w";
-            }
-            else if (wholeImage.texture.width == wholeImage.texture.height)
-            {
-                whichImageIsLonger = "e";
-                ratioImage = (float)wholeImage.texture.width / wholeImage.texture.height;
-                ratioScreen = (float)Screen.width / Screen.height;
-            }
-            else
-            {
-                whichImageIsLonger = "h";
-            }
+            // Check down
+            idDown = idCurr + numSlices;
+            if (idDown >= MaxSizes) idDown = Constants.IdIgnore;
 
-            if (Screen.width > Screen.height)
-            {
-                whichScreenIsLonger = "w";
-            }
-            else
-            {
-                whichScreenIsLonger = "h";
-            }
+            // Check left
+            idLeft = idCurr - 1;
+            if (idLeft < 0 || idCurr % numSlices == 0) idLeft = Constants.IdIgnore;
 
-            screenHeight = Camera.main.orthographicSize * 2f;
-            screenWidth = screenHeight / Screen.height * Screen.width;
+            // Check right
+            idRight = idCurr + 1;
+            if (idRight % numSlices == 0 || idRight >= MaxSizes) idRight = Constants.IdIgnore;
 
-            if (whichImageIsLonger.Equals("e"))
-            {
-                float temp = Mathf.Min((float)screenHeight, (float)screenWidth);
-                if (whichScreenIsLonger.Equals("w"))
-                {
-                    screenHeight = temp;
-                    screenWidth = temp * ratioImage;
-                }
-                else if (whichScreenIsLonger.Equals("h"))
-                {
-                    screenWidth = temp;
-                    screenHeight = temp / ratioImage;
-                }
-            }
-
-            Debug.Log(whichImageIsLonger + " " + whichScreenIsLonger);
-
-            float width = screenWidth / bounds.size.x / Constants.MaxColumns;
-            float height = screenHeight / bounds.size.y / Constants.MaxRows;
-
-            placeHolder[0].transform.localScale = new Vector3(width, height, 1f);
-            placeHolder[0].AddComponent<BoxCollider2D>();
-
-            for (int c = 1; c < placeHolder.Length; c++)
-            {
-                placeHolder[c].GetComponent<SpriteRenderer>().sprite = PuzzleDataMiner.GetPiecesAt(c);
-                placeHolder[c].transform.localScale = new Vector3(width, height, 1f);
-                placeHolder[c].AddComponent<BoxCollider2D>();
-            }
+            board.Swap(idCurr, new int [] { idUp, idDown, idLeft, idRight });
         }
 
     }
 }
-/*
-//Array Coor
-//Constants.MaxRows, Constants.MaxColumns
-
-private Matrix preDeterminedCoor;
-
-//Game state
-// [SerializeField] private GameEnums.GameState gameState;
-
-
-
-Vector3 screenPositionToAnimate;
-private Piece pieceToAnimate;
-private Piece theNullPlace;
-
-private float ratioImage;
-private float ratioScreen;
-private float screenHeight;
-private float screenWidth;
-
-private string whichImageIsLonger = "";
-private string whichScreenIsLonger = "";
-
-//Const
-private const float animSpeed = 10f;
-private const int emptyTileValue = 16;
-
-
-#region Setting GameObject
-private void PreDeterminedPoints()
-{
-preDeterminedCoor = new();
-
-float ratio = 1;
-if (!ratioScreen.Equals(ratioImage))
-{
-    if (Screen.width > Screen.height)
-    {
-        ratio = (float) Screen.height / Screen.width;
-    }
-    else
-    {
-        ratio = ratioScreen;
-    }
-}
-
-for (int row = 0; row < Constants.MaxRows; row++)
-{
-    float trueY = row * 0.25f;
-
-    for (int column = 0; column < Constants.MaxColumns; column++)
-    {
-        float trueX = column * 0.25f;
-
-        Ray ray = Camera.main.ViewportPointToRay(new Vector3((trueX + 0.125f), 1f - (trueY + 0.125f), 0f));
-
-        if (Screen.width > Screen.height)
-        {
-            Vector2 point = new(ray.origin.x * ratio, ray.origin.y);
-            preDeterminedCoor.SetVector(row, column, point);
-        }
-        else
-        {
-            Vector2 point = new(ray.origin.x, ray.origin.y * ratio);
-            preDeterminedCoor.SetVector(row, column, point);
-        }
-    }
-}
-}
-
-#endregion
-
-#region Game
-private Vector3 GetScreenCoordinates(int _row, int _column)
-{
-Vector3 point = preDeterminedCoor.GetVector(_row, _column);
-return point;
-}
-
-private Vector3 GetScreenCoordinates(int _id)
-{
-Vector3 point = preDeterminedCoor.GetVector(_id);
-return point;
-}
-
-private void PlacedGameObjectBasedOnShuffledCoor()
-{
-for (int row = 0; row < Constants.MaxRows; row++)
-{
-    for (int column = 0; column < Constants.MaxColumns; column++)
-    {
-        int id = shuffledCoor.GetID(row, column);
-        if (id.Equals(emptyTileValue))
-        {
-            theNullPlace = board.GetPiece(row, column);
-        }
-        else 
-        {
-            board.SetPosition(row, column, GetScreenCoordinates(id));
-        }
-        board.SetCurrent(row, column, id);
-    }
-}
-}
-
-private void Swap()
-{
-theNullPlace = board.Swap(theNullPlace, pieceToAnimate);
-}
-
-public void CheckPieceInput()
-{
-if (Input.GetMouseButtonUp(0))
-{
-    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-    RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-
-    if (hit.collider != null)
-    {
-        Piece tempPiece = board.GetPiece(hit.collider.gameObject);
-
-        //check for the null piece, taking into account the game bounds
-        bool pieceFound = false;
-        List<int[]> neighbors = new();
-
-        // Check up
-        if ((tempPiece.CurrRow - 1) >= 0)
-            neighbors.Add(new int[] { tempPiece.CurrRow - 1, tempPiece.CurrColumn });
-
-        // Check down
-        if ((tempPiece.CurrRow + 1) < Constants.MaxRows)
-            neighbors.Add(new int[] { tempPiece.CurrRow + 1, tempPiece.CurrColumn });
-
-        // Check left
-        if ((tempPiece.CurrColumn - 1) >= 0)
-            neighbors.Add(new int[] { tempPiece.CurrRow, tempPiece.CurrColumn - 1 });
-
-        // Check right
-        if ((tempPiece.CurrColumn + 1) < Constants.MaxColumns)
-            neighbors.Add(new int[] { tempPiece.CurrRow, tempPiece.CurrColumn + 1 });
-
-        foreach (int[] item in neighbors)
-        {
-            if (item[0].Equals(theNullPlace.CurrRow))
-            {
-                if (item[1].Equals(theNullPlace.CurrColumn))
-                {
-                    pieceFound = true;
-                    break;
-                }
-            }
-        }
-
-        if (pieceFound)
-        {
-            //get the coordinates of the empty object
-            screenPositionToAnimate = GetScreenCoordinates(theNullPlace.CurrRow, theNullPlace.CurrColumn);
-            pieceToAnimate = tempPiece;
-            //gameState = GameEnums.GameState.ANIMATION;
-        }
-
-    }
-}
-}
-
-private void AnimateMovement(Piece toMove, float time)
-{
-//animate it
-//Lerp could also be used, but I prefer the MoveTowards approach :)
-toMove.GameObject.transform.position = Vector2.MoveTowards(toMove.GameObject.transform.position, screenPositionToAnimate, time * animSpeed);
-}
-
-private void CheckIfAnimationEnded()
-{
-if (Vector2.Distance(pieceToAnimate.GameObject.transform.position, screenPositionToAnimate)<0.01f)
-{
-    pieceToAnimate.GameObject.transform.position = screenPositionToAnimate;
-    //make sure they swap, exchange positions and stuff
-    Swap();
-    //check if the use has won
-    CheckForVictory();
-}
-}
-
-private void CheckForVictory()
-{
-//dual loop to check the object's properties
-//gameState = GameEnums.GameState.CHECKING;
-int nonEmptyCount = 0;
-for (int column = 0; column < Constants.MaxColumns; column++)
-{
-    for (int row = 0; row < Constants.MaxRows; row++)
-    {
-        if (board.IsTheSame(row, column)) nonEmptyCount++;
-    }
-}
-
-if(nonEmptyCount.Equals(Constants.MaxSize))
-{
-    //gameState = GameEnums.GameState.END;
-    return;
-}
-//else gameState = GameEnums.GameState.PLAYING;
-}
-#endregion
-
-#region When Game End
-private void DisplayVN()
-{
-//SceneManager.LoadScene((int)GameEnums.SceneOrder.VN);
-}
-
-private void DisplayPanel() => whenGameIsOver.SetActive(true);
-#endregion
-
-// Update is called once per frame
-//private void Update()
-//{
-//    switch (gameState)
-//    {
-//        case GameEnums.GameState.START:
-//            if (Input.GetMouseButtonUp(0))
-//            {
-//                PlacedGameObjectBasedOnShuffledCoor();
-//                gameState = GameEnums.GameState.PLAYING;
-//            }
-//            break;
-//        case GameEnums.GameState.PLAYING:
-//            CheckPieceInput();
-//            break;
-//        case GameEnums.GameState.ANIMATION:
-//            AnimateMovement(pieceToAnimate, Time.deltaTime);
-//            CheckIfAnimationEnded();
-//            break;
-//        case GameEnums.GameState.END:
-//            DisplayPanel();
-//            break;
-//    }
-//}
-
-/// <summary>
-/// boring UI, waiting for uGUI framework :)
-/// </summary>
-//private void OnGUI()
-//{
-//    switch (gameState)
-//    {
-//        case GameState.Start:
-//            GUI.Label(new Rect(0, 0, 100, 100), "Tap to start!");
-//            break;
-//        case GameState.End:
-//            GUI.Label(new Rect(0, 0, 100, 100), "Congrats, tap to start over!");
-//            break;
-//        default:
-//            break;
-//    }
-//}
-*/
 

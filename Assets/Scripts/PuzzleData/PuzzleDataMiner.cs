@@ -22,7 +22,7 @@ namespace PuzzleHen
             }
             get
             {
-                if(_instance.current == null)
+                if (_instance.current == null)
                 {
                     return GetGirls(0).GirlList[0].List[0];
                 }

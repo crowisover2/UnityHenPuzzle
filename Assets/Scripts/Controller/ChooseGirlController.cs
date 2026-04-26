@@ -154,8 +154,8 @@ namespace PuzzleHen.ChooseGirl
             //=> Debug.Log("To Menu");
 
         public virtual void SelectPuzzle()
-            //=> SceneManager.LoadScene(Constants.SceneGame);
-            => Debug.Log("Play" + PuzzleDataMiner.Current.ID);
+            => SceneManager.LoadScene(Constants.SceneGame);
+            //=> Debug.Log("Play" + PuzzleDataMiner.Current.ID);
     }
 }
 

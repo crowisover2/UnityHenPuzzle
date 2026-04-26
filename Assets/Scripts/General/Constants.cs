@@ -10,4 +10,6 @@ public static class Constants
     public static readonly string SceneGame = "Game";
     public static readonly string SceneGallery = "Gallery";
     public static readonly string SceneChooseGirl = "ChooseGirl";
+    
+    public static readonly int IdIgnore = 99;
 }
